@@ -6,28 +6,18 @@ LABEL maintainer="ecleya <ecleya@gmail.com>"
 
 
 # Install Algospot Kernel
-RUN conda update conda && \
-    conda create -y --name algospot_py3 python=3.4.3 ipykernel && \
-    /bin/bash -c "source activate algospot_py3" && \
+RUN conda update -y conda && \
+    conda create -y --name algospot.python python=3.4.3 ipykernel && \
+    /bin/bash -c "source activate algospot.python" && \
     pip install requests termcolor beautifulsoup4 && \
-    python -m ipykernel install --user --name "algospot_py3" && \
+    python -m ipykernel install --user --name "algospot.python" && \
     /bin/bash -c "source deactivate"
 
 # Install Cling Kernel
-USER root
-WORKDIR /opt
-RUN wget https://root.cern.ch/download/cling/cling_2017-11-13_ubuntu16.tar.bz2 && \
-    tar xvf cling_2017-11-13_ubuntu16.tar.bz2 && \
-    mv cling_2017-11-13_ubuntu16 cling && \
-    rm cling_2017-11-13_ubuntu16.tar.bz2 && \
-    chown -R jovyan:users cling && \
-    cd /opt/cling/share/cling/Jupyter/kernel && \
-    pip install -e . && \
-    jupyter-kernelspec install --user cling-cpp11
-
-ENV PATH=/opt/cling/bin:$PATH
-
-WORKDIR $HOME
-USER $NB_USER
+RUN conda create -y --name algospot.cpp cling && \
+    /bin/bash -c "source activate algospot.cpp" && \
+    jupyter-kernelspec install /opt/conda/envs/algospot.cpp/share/cling/Jupyter/kernel/cling-cpp11 --user --name "algospot.cpp" && \
+    /bin/bash -c "source deactivate"
+COPY kernel/algospot.cpp.json $HOME/.local/share/jupyter/kernels/algospot.cpp/kernel.json
 
 ADD algospot_utils.ipynb /home/jovyan/algospot_utils.ipynb
